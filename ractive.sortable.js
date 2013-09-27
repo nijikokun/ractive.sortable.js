@@ -1,3 +1,16 @@
+if (!Ractive.eventDefinitions.wrap) {
+  /**
+   * Wrap outer methods to have reference to event definitions arguments.
+   *
+   * @param {Function} method Outer method to be wrapped.
+   */
+  Ractive.eventDefinitions.wrap = function (method) {
+    return function (node, fire) {
+      return method;
+    };
+  };
+};
+
 /**
  * Drag N' Drop Sortable Ractive Event
  * 
@@ -7,48 +20,76 @@
  * @author  Nijiko Yonskai
  * @copyright  2013
  */
-Ractive.eventDefinitions.sortable = function (node, fire) {
-  var CLASSES = Ractive.eventDefinitions.sortable.CLASSES;
+var Sortable = Ractive.eventDefinitions.sortable = function (node, fire) {
+  // References
+  var $self = Ractive.eventDefinitions.sortable;
+  var $arguments = Array.prototype.slice.call(arguments, 0);
 
-  var foreach = function (n, next) {
-    if (n.length) Array.prototype.forEach.call(n, next);
-  };
+  // Allocation
+  var Drag = ($self.Drag.apply(this, $arguments))();
 
-  var prevent = function (event) {
-    if (event.stopPropagation) event.stopPropagation();
-    if (event.preventDefault) event.preventDefault();
-    event.returnValue = false;
+  // Attach
+  $self.foreach(node.children, Drag.attach);
+
+  // Output
+  return {
+    teardown: function () {
+      $self.foreach(node.children, Drag.detach);
+    },
+
+    update: function () {
+      $self.foreach(node.children, Drag.attach);
+    }
   };
+};
+
+/**
+ * Sortable classname structure
+ * 
+ * @type {Object}
+ */
+Sortable.CLASSES = {
+  CHILD: 'sortable-child',
+  DRAGGING: 'sortable-dragging',
+  OVER: 'sortable-over'
+};
+
+/**
+ * Sugar for forEach method
+ * 
+ * @param  {Array}    iterable    List to iterate over
+ * @param  {Function} callback    Callback
+ * @return {void}
+ */
+Sortable.foreach = function (iterable, callback) {
+  if (iterable.length) Array.prototype.forEach.call(iterable, callback);
+};
+
+/**
+ * Prevent bubbling on events
+ * 
+ * @param  {Object} event Native event
+ * @return {void}
+ */
+Sortable.prevent = function (event) {
+  if (event.stopPropagation) event.stopPropagation();
+  if (event.preventDefault) event.preventDefault();
+  event.returnValue = false;
+};
+
+/**
+ * Core
+ * 
+ * @return {Function} Invoking this method returns drag object.
+ */
+Sortable.Drag = Ractive.eventDefinitions.wrap(function () {
+  var CLASSES = Sortable.CLASSES;
+  var foreach = Sortable.foreach;
+  var prevent = Sortable.prevent;
 
   // Hipster Nerd Tip:
   // !! does a type coercion to boolean: http://bonsaiden.github.io/JavaScript-Garden/#types.casting
   var ClassListSupported = !!(typeof document !== "undefined" && ("classList" in document.documentElement));
-
-  var Class = function (el) {
-    var library = {
-      has: function (name) {
-        if (ClassListSupported) return el.classList.contains(name);
-        else return new RegExp("(?:^|\\s+)" + name + "(?:\\s+|$)").test(el.className);
-      },
-
-      add: function (name) {
-        if (ClassListSupported) el.classList.add(name);
-        else if (!library.has(name)) {
-          el.className = el.className ? [el.className, name].join(' ') : name;
-        }
-      },
-
-      remove: function (name) {
-        if (ClassListSupported && el.classList.contains(name)) return el.classList.remove(name);
-        else if (library.has(name)) {
-          var c = el.className;
-          el.className = c.replace(new RegExp("(?:^|\\s+)" + name + "(?:\\s+|$)", "g"), " ").replace(/^\s\s*/, '').replace(/\s\s*$/, '');
-        }
-      }
-    };
-
-    return library;
-  };
 
   // Hipster Nerd Tip
   // The second statement checks two flags, the first is done above it, the second is what we call an anonymous function!
@@ -59,13 +100,50 @@ Ractive.eventDefinitions.sortable = function (node, fire) {
     return ('draggable' in div) || ('ondragstart' in div && 'ondrop' in div);
   })();
 
-  var Delegate = function (callback) {
+  /**
+   * Sortable DOM Element Class Management
+   * 
+   * @param {Object} el Native DOM Element
+   */
+  var Class = function (el) {
+    var library = {
+      has: function (name) {
+        if (Sortable.ClassListSupported) return el.classList.contains(name);
+        else return new RegExp("(?:^|\\s+)" + name + "(?:\\s+|$)").test(el.className);
+      },
+
+      add: function (name) {
+        if (Sortable.ClassListSupported) el.classList.add(name);
+        else if (!library.has(name)) {
+          el.className = el.className ? [el.className, name].join(' ') : name;
+        }
+      },
+
+      remove: function (name) {
+        if (Sortable.ClassListSupported && el.classList.contains(name)) return el.classList.remove(name);
+        else if (library.has(name)) {
+          var c = el.className;
+          el.className = c.replace(new RegExp("(?:^|\\s+)" + name + "(?:\\s+|$)", "g"), " ").replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+        }
+      }
+    };
+
+    return library;
+  };
+
+  /**
+   * Delegation to reduce code repetition.
+   * 
+   * @param  {Function} callback Method to be invoked after delegation.
+   * @return {Function}          Event capture method.
+   */
+  var Delegate = Ractive.eventDefinitions.wrap(function (callback) {
     return function (event) {
-      var target = (TouchSupported && event.touches && event.touches[0]) || event.target;
+      var target = (Sortable.TouchSupported && event.touches && event.touches[0]) || event.target;
       var context;
 
       // Fix target for touch events
-      if (TouchSupported && document.elementFromPoint)
+      if (Sortable.TouchSupported && document.elementFromPoint)
         target = document.elementFromPoint(event.pageX - document.body.scrollLeft, event.pageY - document.body.scrollTop);
 
       if (Class(target).has(CLASSES.CHILD))
@@ -77,7 +155,7 @@ Ractive.eventDefinitions.sortable = function (node, fire) {
       if (context = Drag.move.up(node, target))
         return callback.call(context, event);
     };
-  };
+  });
 
   var Drag = {
     event: function (name) {
@@ -238,41 +316,32 @@ Ractive.eventDefinitions.sortable = function (node, fire) {
 
         return false;
       }
+    },
+
+    attach: function (element) {
+      if (element.draggable) return;
+
+      element.draggable = true;
+      element.addEventListener('dragstart', Drag.event('drag_start'));
+      element.addEventListener('dragenter', Drag.event('drag_enter'));
+      element.addEventListener('dragover', Drag.event('drag_over'));
+      element.addEventListener('dragleave', Drag.event('drag_leave'));
+      element.addEventListener('drop', Drag.event('drag_drop'));
+      element.addEventListener('dragend', Drag.event('drag_end'));
+    },
+
+    detach: function (element) {
+      if (element.draggable) return;
+
+      element.draggable = false;
+      element.removeEventListener('dragstart', Drag.event('drag_start'));
+      element.removeEventListener('dragenter', Drag.event('drag_enter'));
+      element.removeEventListener('dragover', Drag.event('drag_over'));
+      element.removeEventListener('dragleave', Drag.event('drag_leave'));
+      element.removeEventListener('drop', Drag.event('drag_drop'));
+      element.removeEventListener('dragend', Drag.event('drag_end'));
     }
   };
-  
-  foreach(node.children, function (el) {
-    el.draggable = true;
-    el.addEventListener('dragstart', Drag.event('drag_start'));
-    el.addEventListener('dragenter', Drag.event('drag_enter'));
-    el.addEventListener('dragover', Drag.event('drag_over'));
-    el.addEventListener('dragleave', Drag.event('drag_leave'));
-    el.addEventListener('drop', Drag.event('drag_drop'));
-    el.addEventListener('dragend', Drag.event('drag_end'));
-  });
 
-  return {
-    teardown: function () {
-      foreach(node.children, function (el) {
-        el.draggable = true;
-        el.removeEventListener('dragstart', Drag.event('drag_start'));
-        el.removeEventListener('dragenter', Drag.event('drag_enter'));
-        el.removeEventListener('dragover', Drag.event('drag_over'));
-        el.removeEventListener('dragleave', Drag.event('drag_leave'));
-        el.removeEventListener('drop', Drag.event('drag_drop'));
-        el.removeEventListener('dragend', Drag.event('drag_end'));
-      });
-    }
-  };
-};
-
-/**
- * Sortable classname structure
- * 
- * @type {Object}
- */
-Ractive.eventDefinitions.sortable.CLASSES = {
-  CHILD: 'sortable-child',
-  DRAGGING: 'sortable-dragging',
-  OVER: 'sortable-over'
-};
+  return Drag;
+});
