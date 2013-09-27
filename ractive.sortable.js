@@ -20,7 +20,7 @@ if (!Ractive.eventDefinitions.wrap) {
  * @author  Nijiko Yonskai
  * @copyright  2013
  */
-var Sortable = Ractive.eventDefinitions.sortable = function (node, fire) {
+Ractive.eventDefinitions.sortable = function (node, fire) {
   // References
   var $self = Ractive.eventDefinitions.sortable;
   var $arguments = Array.prototype.slice.call(arguments, 0);
@@ -48,7 +48,7 @@ var Sortable = Ractive.eventDefinitions.sortable = function (node, fire) {
  * 
  * @type {Object}
  */
-Sortable.CLASSES = {
+Ractive.eventDefinitions.sortable.CLASSES = {
   CHILD: 'sortable-child',
   DRAGGING: 'sortable-dragging',
   OVER: 'sortable-over'
@@ -61,7 +61,7 @@ Sortable.CLASSES = {
  * @param  {Function} callback    Callback
  * @return {void}
  */
-Sortable.foreach = function (iterable, callback) {
+Ractive.eventDefinitions.sortable.foreach = function (iterable, callback) {
   if (iterable.length) Array.prototype.forEach.call(iterable, callback);
 };
 
@@ -71,7 +71,7 @@ Sortable.foreach = function (iterable, callback) {
  * @param  {Object} event Native event
  * @return {void}
  */
-Sortable.prevent = function (event) {
+Ractive.eventDefinitions.sortable.prevent = function (event) {
   if (event.stopPropagation) event.stopPropagation();
   if (event.preventDefault) event.preventDefault();
   event.returnValue = false;
@@ -83,9 +83,9 @@ Sortable.prevent = function (event) {
  * @return {Function} Invoking this method returns drag object.
  */
 Sortable.Drag = Ractive.eventDefinitions.wrap(function () {
-  var CLASSES = Sortable.CLASSES;
-  var foreach = Sortable.foreach;
-  var prevent = Sortable.prevent;
+  var CLASSES = Ractive.eventDefinitions.sortable.CLASSES;
+  var foreach = Ractive.eventDefinitions.sortable.foreach;
+  var prevent = Ractive.eventDefinitions.sortable.prevent;
 
   // Hipster Nerd Tip:
   // !! does a type coercion to boolean: http://bonsaiden.github.io/JavaScript-Garden/#types.casting
@@ -108,19 +108,19 @@ Sortable.Drag = Ractive.eventDefinitions.wrap(function () {
   var Class = function (el) {
     var library = {
       has: function (name) {
-        if (Sortable.ClassListSupported) return el.classList.contains(name);
+        if (ClassListSupported) return el.classList.contains(name);
         else return new RegExp("(?:^|\\s+)" + name + "(?:\\s+|$)").test(el.className);
       },
 
       add: function (name) {
-        if (Sortable.ClassListSupported) el.classList.add(name);
+        if (ClassListSupported) el.classList.add(name);
         else if (!library.has(name)) {
           el.className = el.className ? [el.className, name].join(' ') : name;
         }
       },
 
       remove: function (name) {
-        if (Sortable.ClassListSupported && el.classList.contains(name)) return el.classList.remove(name);
+        if (ClassListSupported && el.classList.contains(name)) return el.classList.remove(name);
         else if (library.has(name)) {
           var c = el.className;
           el.className = c.replace(new RegExp("(?:^|\\s+)" + name + "(?:\\s+|$)", "g"), " ").replace(/^\s\s*/, '').replace(/\s\s*$/, '');
@@ -139,11 +139,11 @@ Sortable.Drag = Ractive.eventDefinitions.wrap(function () {
    */
   var Delegate = Ractive.eventDefinitions.wrap(function (callback) {
     return function (event) {
-      var target = (Sortable.TouchSupported && event.touches && event.touches[0]) || event.target;
+      var target = (TouchSupported && event.touches && event.touches[0]) || event.target;
       var context;
 
       // Fix target for touch events
-      if (Sortable.TouchSupported && document.elementFromPoint)
+      if (TouchSupported && document.elementFromPoint)
         target = document.elementFromPoint(event.pageX - document.body.scrollLeft, event.pageY - document.body.scrollTop);
 
       if (Class(target).has(CLASSES.CHILD))
