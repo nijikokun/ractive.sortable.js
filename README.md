@@ -23,7 +23,7 @@ Now we watch the sortable element like so, I've given you a simple method for mo
 **Code**
 ```js
 ractive.on('sort-items', function (event) {
-  if (event.warp) event.warp();
+  if (event.move) event.move();
 });
 ```
 
@@ -33,4 +33,4 @@ ractive.on('sort-items', function (event) {
 - `target` Element that is being targeted by the current dragged element.
 - `current` Element being dragged
 - `original` DOM Event
-- `warp` Pre-made move method.
+- `move` Pre-made move method.

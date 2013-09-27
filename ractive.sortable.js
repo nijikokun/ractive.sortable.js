@@ -123,7 +123,7 @@ Ractive.eventDefinitions.sortable = function (node, fire) {
           current: Drag.current.element,
           original: event,
           type: 'enter',
-          warp: function () {
+          move: function () {
             console.log($this);
             Drag.move.next(Drag.current.element, $this);
           }
@@ -156,7 +156,7 @@ Ractive.eventDefinitions.sortable = function (node, fire) {
         current: Drag.current.element,
         original: event,
         type: 'drop',
-        warp: function () {
+        move: function () {
           var sibling = Drag.current.element.nextSibling;
           $this.parentNode.insertBefore(Drag.current.element, $this);
           $this.parentNode.insertBefore($this, sibling);
