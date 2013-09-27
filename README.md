@@ -18,16 +18,19 @@ After including `ractive` and `ractive.sortable.js`:
 </script>
 ```
 
+Now we watch the sortable element like so, I've given you a simple method for moving the element around, or your can create your own depending on the `event.type`:
+
 **Code**
 ```js
-/**
- * Sortable classname structure
- * 
- * @type {Object}
- */
-Ractive.eventDefinitions.sortable.CLASSES = {
-  CHILD: 'sortable-child',
-  DRAGGING: 'sortable-dragging',
-  OVER: 'sortable-over'
-};
+ractive.on('sort-items', function (event) {
+  if (event.warp) event.warp();
+});
 ```
+
+## Event Object
+
+- `type` Event type, currently: `enter`, and `drop`
+- `target` Element that is being targeted by the current dragged element.
+- `current` Element being dragged
+- `original` DOM Event
+- `warp` Pre-made move method.
