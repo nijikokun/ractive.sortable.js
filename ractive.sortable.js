@@ -6,7 +6,7 @@ if (!Ractive.eventDefinitions.wrap) {
    */
   Ractive.eventDefinitions.wrap = function (method) {
     return function (node, fire) {
-      return method;
+      return method(node, fire);
     };
   };
 };
@@ -26,7 +26,7 @@ Ractive.eventDefinitions.sortable = function (node, fire) {
   var $arguments = Array.prototype.slice.call(arguments, 0);
 
   // Allocation
-  var Drag = ($self.Drag.apply(this, $arguments))();
+  var Drag = ($self.Drag.apply(this, $arguments));
 
   // Attach
   $self.foreach(node.children, Drag.attach);
@@ -82,7 +82,7 @@ Ractive.eventDefinitions.sortable.prevent = function (event) {
  * 
  * @return {Function} Invoking this method returns drag object.
  */
-Ractive.eventDefinitions.sortable.Drag = Ractive.eventDefinitions.wrap(function () {
+Ractive.eventDefinitions.sortable.Drag = Ractive.eventDefinitions.wrap(function (node, fire) {
   var CLASSES = Ractive.eventDefinitions.sortable.CLASSES;
   var foreach = Ractive.eventDefinitions.sortable.foreach;
   var prevent = Ractive.eventDefinitions.sortable.prevent;
