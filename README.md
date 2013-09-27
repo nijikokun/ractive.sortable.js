@@ -1,26 +1,39 @@
 # ractive.sortable.js
 
-Sortable Event Definition for Ractive
-
+Native Drag N' Drop Sortable Event Definition for Ractive
 
 ## Usage
 
-After including `ractive` and `ractive.sortable.js`:
+After including [ractive](https://github.com/Rich-Harris/Ractive) and `ractive.sortable.js`:
 
 **Template**
 ```html
-<script type="text/ractive" id="template">
-  <ul proxy-sortable='sort-items'>
-    {{#items:i}}
-      <li>{{items[i]}}</li>
-    {{/items}}
-  </ul>
-</script>
+<ul proxy-sortable='sort-items'>
+  {{#items:i}}
+    <li>{{items[i]}}</li>
+  {{/items}}
+</ul>
 ```
 
-Now we watch the sortable element like so, I've given you a simple method for moving the element around, or your can create your own depending on the `event.type`:
-
 **Code**
+
+Ractive Boilerplate
+
+```js
+ractive = new Ractive({
+  el: containerElement,
+  template: templateElement,
+  data: {
+    items: [
+      'One', 'Two', 'Three'
+    ]
+  }
+});
+```
+
+Sortable event watcher, on the event passed there is a pre-made `move` method which can swap dom elements for you, 
+or your can make your own (check the source for how it's done).
+
 ```js
 ractive.on('sort-items', function (event) {
   if (event.move) event.move();
