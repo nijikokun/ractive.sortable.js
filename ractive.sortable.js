@@ -82,7 +82,7 @@ Ractive.eventDefinitions.sortable.prevent = function (event) {
  * 
  * @return {Function} Invoking this method returns drag object.
  */
-Sortable.Drag = Ractive.eventDefinitions.wrap(function () {
+Ractive.eventDefinitions.sortable.Drag = Ractive.eventDefinitions.wrap(function () {
   var CLASSES = Ractive.eventDefinitions.sortable.CLASSES;
   var foreach = Ractive.eventDefinitions.sortable.foreach;
   var prevent = Ractive.eventDefinitions.sortable.prevent;
