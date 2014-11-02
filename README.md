@@ -8,7 +8,7 @@ After including [ractive](https://github.com/Rich-Harris/Ractive) and `ractive.s
 
 **Template**
 ```html
-<ul proxy-sortable='sort-items'>
+<ul on-sortable='sort-items'>
   {{#items:i}}
     <li>{{items[i]}}</li>
   {{/items}}
@@ -31,7 +31,7 @@ ractive = new Ractive({
 });
 ```
 
-Sortable event watcher, on the event passed there is a pre-made `move` method which can swap dom elements for you, 
+Sortable event watcher, on the event passed there is a pre-made `move` method which can swap dom elements for you,
 or your can make your own (check the source for how it's done).
 
 ```js
